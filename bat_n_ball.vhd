@@ -42,7 +42,15 @@ ARCHITECTURE Behavioral OF bat_n_ball IS
     SIGNAL flap_counter : INTEGER := 0; -- Counter to manage flap duration
     SIGNAL flap_active : STD_LOGIC := '0'; -- Indicates if the flap is currently active
 
-    
+    SIGNAL pipe_x : INTEGER RANGE -10 TO 800 := 800; -- Initialize pipe at the far right
+    SIGNAL pipe_speed : INTEGER := 1; -- Speed of the pipe
+    SIGNAL pipe_on : STD_LOGIC; -- Indicates whether the pipe is over the current pixel
+    CONSTANT pipe_width : INTEGER := 10; -- Pipe width
+    CONSTANT gap_height : INTEGER := 200; -- Height of the gap
+    CONSTANT pipe_top_height : INTEGER := 150; -- Height of the top part of the pipe
+    CONSTANT screen_height : INTEGER := 800; -- Total height of the screen
+
+
     SIGNAL Dis_num : INTEGER := 0;
     
     SIGNAL ball_on : STD_LOGIC; -- indicates whether ball is at current pixel position
@@ -56,7 +64,7 @@ ARCHITECTURE Behavioral OF bat_n_ball IS
     -- current ball motion - initialized to (+ ball_speed) pixels/frame in both X and Y directions
     SIGNAL ball_x_motion, ball_y_motion : STD_LOGIC_VECTOR(10 DOWNTO 0) := ball_speed;
 BEGIN
-    red <= NOT bat_on; -- color setup for red ball and cyan bat on white background
+    red <= NOT pipe_on; -- color setup for red ball and cyan bat on white background
     green <= NOT ball_on;
     blue <= NOT ball_on;
     -- process to draw round ball
@@ -80,7 +88,38 @@ BEGIN
             ball_on <= '0';
         END IF;
     END PROCESS;
-   
+    
+     pipedraw : PROCESS (pipe_x, pixel_row, pixel_col) IS
+        VARIABLE vx, vy : STD_LOGIC_VECTOR (10 DOWNTO 0); -- 9 downto 0
+    BEGIN
+    -- Reset pipe_on for each pixel check
+    pipe_on <= '0';
+
+    -- Check if the current pixel column is within the pipe's width
+    IF pixel_col >= pipe_x AND pixel_col < pipe_x + pipe_width THEN
+        -- Draw the top part of the pipe
+        IF pixel_row < pipe_top_height THEN
+            pipe_on <= '1';
+        -- Draw the bottom part of the pipe
+        ELSIF pixel_row > pipe_top_height + gap_height AND pixel_row < screen_height THEN
+            pipe_on <= '1';
+        ELSE
+            pipe_on <= '0';
+        END IF;
+    ELSE
+        pipe_on <= '0';
+    END IF;
+    END PROCESS;
+    
+    move_pipe : PROCESS
+    BEGIN
+        WAIT UNTIL rising_edge(v_sync);
+        IF pipe_x > 0 THEN
+            pipe_x <= pipe_x - 1;  -- Move pipe to the left
+        ELSE
+            pipe_x <= 800;  -- Reset pipe to the middle when it reaches the left edge
+        END IF;
+    END PROCESS;
     -- process to move ball once every frame (i.e., once every vsync pulse)
     mball : PROCESS
         VARIABLE temp : STD_LOGIC_VECTOR (11 DOWNTO 0);
@@ -140,4 +179,7 @@ BEGIN
         -- END IF;
         
     END PROCESS;
+    
+
+    
 END Behavioral;
