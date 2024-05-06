@@ -156,7 +156,19 @@ BEGIN
         display <= std_logic_vector(to_unsigned(Dis_num, display'length));
     END IF;
 
-
+        -- Check for collision with the top part of the pipe
+        IF (ball_y - bsize/2) <= pipe_top_height THEN
+            IF (ball_x + bsize/2) >= pipe_x AND (ball_x - bsize/2) <= (pipe_x + pipe_width) THEN
+                game_on <= '0'; -- Collision detected, game over
+            END IF;
+        END IF;
+    
+        -- Check for collision with the bottom part of the pipe
+        IF (ball_y + bsize/2) >= (pipe_top_height + gap_height) THEN
+            IF (ball_x + bsize/2) >= pipe_x AND (ball_x - bsize/2) <= (pipe_x + pipe_width) THEN
+                game_on <= '0'; -- Collision detected, game over
+            END IF;
+        END IF;
     
         -- compute next ball vertical position
         -- variable temp adds one more bit to calculation to fix unsigned underflow problems
