@@ -47,7 +47,8 @@ ARCHITECTURE Behavioral OF bat_n_ball IS
     SIGNAL pipe_on : STD_LOGIC; -- Indicates whether the pipe is over the current pixel
     CONSTANT pipe_width : INTEGER := 10; -- Pipe width
     CONSTANT gap_height : INTEGER := 200; -- Height of the gap
-    CONSTANT pipe_top_height : INTEGER := 150; -- Height of the top part of the pipe
+    signal pipe_top_height : INTEGER := 150; -- Height of the top part of the pipe
+        SIGNAL random_value : INTEGER RANGE 100 TO 300; -- Random component for pipe height
     CONSTANT screen_height : INTEGER := 800; -- Total height of the screen
 
 
@@ -89,6 +90,14 @@ BEGIN
         END IF;
     END PROCESS;
     
+    randomizer : PROCESS
+    BEGIN
+        WAIT UNTIL rising_edge(v_sync);
+        random_value <= random_value + 10;  -- Increment to simulate randomness
+        IF random_value > 300 THEN  -- Reset to keep within range
+            random_value <= 100;
+        END IF;
+    END PROCESS;
      pipedraw : PROCESS (pipe_x, pixel_row, pixel_col) IS
         VARIABLE vx, vy : STD_LOGIC_VECTOR (10 DOWNTO 0); -- 9 downto 0
     BEGIN
@@ -117,8 +126,20 @@ BEGIN
         IF pipe_x > 0 THEN
             pipe_x <= pipe_x - 1;  -- Move pipe to the left
         ELSE
-            pipe_x <= 800;  -- Reset pipe to the middle when it reaches the left edge
+            pipe_x <= 800;  -- Reset pipe to the far right when it reaches the left edge
+            -- Randomize the top height of the pipe each time it resets
+            pipe_top_height <= random_value;  -- Assign a new random value for pipe top height
         END IF;
+        
+    IF pipe_x + pipe_width < 400 AND pipe_x + pipe_width + 1 >= 400 AND game_on = '1' THEN
+        Dis_num <= Dis_num + 1;
+        display <= std_logic_vector(to_unsigned(Dis_num, display'length));
+    END IF;
+    
+    IF game_on = '0' THEN
+        Dis_num <= 0;
+    END IF;
+    
     END PROCESS;
     -- process to move ball once every frame (i.e., once every vsync pulse)
     mball : PROCESS
@@ -152,8 +173,6 @@ BEGIN
     ELSIF ball_y + bsize >= 600 THEN -- if ball meets bottom wall
         ball_y_motion <= (NOT ball_speed) + 1; -- set vspeed to (- ball_speed) pixels
         game_on <= '0'; -- and make ball 
-        Dis_num <= 0;
-        display <= std_logic_vector(to_unsigned(Dis_num, display'length));
     END IF;
 
         -- Check for collision with the top part of the pipe
