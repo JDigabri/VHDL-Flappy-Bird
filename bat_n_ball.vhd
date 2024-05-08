@@ -43,12 +43,15 @@ ARCHITECTURE Behavioral OF bat_n_ball IS
     SIGNAL flap_active : STD_LOGIC := '0'; -- Indicates if the flap is currently active
 
     SIGNAL pipe_x : INTEGER RANGE -10 TO 800 := 800; -- Initialize pipe at the far right
-    SIGNAL pipe_speed : INTEGER := 1; -- Speed of the pipe
+    SIGNAL pipe2_x : INTEGER RANGE -10 TO 800 := 533; -- Initialize pipe at the far right
+    SIGNAL pipe3_x : INTEGER RANGE -10 TO 800 := 267; -- Initialize pipe at the far right
+
+    SIGNAL pipe_speed : INTEGER := 2; -- Speed of the pipe
     SIGNAL pipe_on : STD_LOGIC; -- Indicates whether the pipe is over the current pixel
     CONSTANT pipe_width : INTEGER := 10; -- Pipe width
     CONSTANT gap_height : INTEGER := 200; -- Height of the gap
-    signal pipe_top_height : INTEGER := 150; -- Height of the top part of the pipe
-        SIGNAL random_value : INTEGER RANGE 100 TO 300; -- Random component for pipe height
+    signal pipe_top_height, pipe2_top_height, pipe3_top_height : INTEGER RANGE 100 TO 300 := 150; -- Top heights
+    SIGNAL random_value, pipe2_random, pipe3_random : INTEGER RANGE 100 TO 300 := 150; -- Random values
     CONSTANT screen_height : INTEGER := 800; -- Total height of the screen
 
 
@@ -98,49 +101,85 @@ BEGIN
             random_value <= 100;
         END IF;
     END PROCESS;
-     pipedraw : PROCESS (pipe_x, pixel_row, pixel_col) IS
-        VARIABLE vx, vy : STD_LOGIC_VECTOR (10 DOWNTO 0); -- 9 downto 0
+    pipedraw : PROCESS (pipe_x, pipe2_x, pipe3_x, pixel_row, pixel_col)
     BEGIN
-    -- Reset pipe_on for each pixel check
-    pipe_on <= '0';
+        pipe_on <= '0'; -- Default to off
 
-    -- Check if the current pixel column is within the pipe's width
-    IF pixel_col >= pipe_x AND pixel_col < pipe_x + pipe_width THEN
-        -- Draw the top part of the pipe
-        IF pixel_row < pipe_top_height THEN
-            pipe_on <= '1';
-        -- Draw the bottom part of the pipe
-        ELSIF pixel_row > pipe_top_height + gap_height AND pixel_row < screen_height THEN
-            pipe_on <= '1';
-        ELSE
-            pipe_on <= '0';
+        -- Check and draw first pipe
+        IF pixel_col >= pipe_x AND pixel_col < pipe_x + pipe_width THEN
+            IF (pixel_row < pipe_top_height) OR (pixel_row > pipe_top_height + gap_height AND pixel_row < screen_height) THEN
+                pipe_on <= '1';
+            END IF;
         END IF;
-    ELSE
-        pipe_on <= '0';
-    END IF;
+
+        -- Check and draw second pipe
+        IF pixel_col >= pipe2_x AND pixel_col < pipe2_x + pipe_width THEN
+            IF (pixel_row < pipe2_top_height) OR (pixel_row > pipe2_top_height + gap_height AND pixel_row < screen_height) THEN
+                pipe_on <= '1';
+            END IF;
+        END IF;
+
+        -- Check and draw third pipe
+        IF pixel_col >= pipe3_x AND pixel_col < pipe3_x + pipe_width THEN
+            IF (pixel_row < pipe3_top_height) OR (pixel_row > pipe3_top_height + gap_height AND pixel_row < screen_height) THEN
+                pipe_on <= '1';
+            END IF;
+        END IF;
     END PROCESS;
     
-    move_pipe : PROCESS
-    BEGIN
-        WAIT UNTIL rising_edge(v_sync);
-        IF pipe_x > 0 THEN
-            pipe_x <= pipe_x - 1;  -- Move pipe to the left
-        ELSE
-            pipe_x <= 800;  -- Reset pipe to the far right when it reaches the left edge
-            -- Randomize the top height of the pipe each time it resets
-            pipe_top_height <= random_value;  -- Assign a new random value for pipe top height
-        END IF;
-        
-    IF pipe_x + pipe_width < 400 AND pipe_x + pipe_width + 1 >= 400 AND game_on = '1' THEN
+   
+    
+move_pipes : PROCESS
+BEGIN
+    WAIT UNTIL rising_edge(v_sync);
+    display <= std_logic_vector(to_unsigned(Dis_num, display'length));
+
+    -- Move and reset the first pipe
+    IF pipe_x > 0 THEN
+        pipe_x <= pipe_x - pipe_speed;
+    ELSE
+        pipe_x <= 800;
+        pipe_top_height <= random_value;
+    END IF;
+
+    -- Move and reset the second pipe
+    IF pipe2_x > 0 THEN
+        pipe2_x <= pipe2_x - pipe_speed;
+    ELSE
+        pipe2_x <= 800;
+        pipe2_top_height <= pipe2_random;
+    END IF;
+
+    -- Move and reset the third pipe
+    IF pipe3_x > 0 THEN
+        pipe3_x <= pipe3_x - pipe_speed;
+    ELSE
+        pipe3_x <= 800;
+        pipe3_top_height <= pipe3_random;
+    END IF;
+
+    -- Score update for crossing the middle
+    IF (pipe_x + pipe_width <= 400) AND (pipe_x + pipe_width > 398) AND game_on = '1' THEN
         Dis_num <= Dis_num + 1;
-        display <= std_logic_vector(to_unsigned(Dis_num, display'length));
     END IF;
     
+    IF (pipe2_x + pipe_width <= 400) AND (pipe2_x + pipe_width > 398) AND game_on = '1' THEN
+        Dis_num <= Dis_num + 1;
+    END IF;
+    
+    IF (pipe3_x + pipe_width <= 400) AND (pipe3_x + pipe_width > 398) AND game_on = '1' THEN
+        Dis_num <= Dis_num + 1;
+    END IF;
+
+
+    -- Reset score when game is over
     IF game_on = '0' THEN
         Dis_num <= 0;
     END IF;
+
+END PROCESS;
+
     
-    END PROCESS;
     -- process to move ball once every frame (i.e., once every vsync pulse)
     mball : PROCESS
         VARIABLE temp : STD_LOGIC_VECTOR (11 DOWNTO 0);
@@ -176,18 +215,44 @@ BEGIN
     END IF;
 
         -- Check for collision with the top part of the pipe
+        -- Check for collision with the top part of each pipe
         IF (ball_y - bsize/2) <= pipe_top_height THEN
             IF (ball_x + bsize/2) >= pipe_x AND (ball_x - bsize/2) <= (pipe_x + pipe_width) THEN
-                game_on <= '0'; -- Collision detected, game over
+                game_on <= '0'; -- Collision detected, game over with the first pipe
             END IF;
         END IF;
-    
-        -- Check for collision with the bottom part of the pipe
+        
+        IF (ball_y - bsize/2) <= pipe2_top_height THEN
+            IF (ball_x + bsize/2) >= pipe2_x AND (ball_x - bsize/2) <= (pipe2_x + pipe_width) THEN
+                game_on <= '0'; -- Collision detected, game over with the second pipe
+            END IF;
+        END IF;
+        
+        IF (ball_y - bsize/2) <= pipe3_top_height THEN
+            IF (ball_x + bsize/2) >= pipe3_x AND (ball_x - bsize/2) <= (pipe3_x + pipe_width) THEN
+                game_on <= '0'; -- Collision detected, game over with the third pipe
+            END IF;
+        END IF;
+        
+        -- Check for collision with the bottom part of each pipe
         IF (ball_y + bsize/2) >= (pipe_top_height + gap_height) THEN
             IF (ball_x + bsize/2) >= pipe_x AND (ball_x - bsize/2) <= (pipe_x + pipe_width) THEN
-                game_on <= '0'; -- Collision detected, game over
+                game_on <= '0'; -- Collision detected, game over with the first pipe
             END IF;
         END IF;
+        
+        IF (ball_y + bsize/2) >= (pipe2_top_height + gap_height) THEN
+            IF (ball_x + bsize/2) >= pipe2_x AND (ball_x - bsize/2) <= (pipe2_x + pipe_width) THEN
+                game_on <= '0'; -- Collision detected, game over with the second pipe
+            END IF;
+        END IF;
+        
+        IF (ball_y + bsize/2) >= (pipe3_top_height + gap_height) THEN
+            IF (ball_x + bsize/2) >= pipe3_x AND (ball_x - bsize/2) <= (pipe3_x + pipe_width) THEN
+                game_on <= '0'; -- Collision detected, game over with the third pipe
+            END IF;
+        END IF;
+        
     
         -- compute next ball vertical position
         -- variable temp adds one more bit to calculation to fix unsigned underflow problems
