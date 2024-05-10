@@ -1,3 +1,13 @@
+## Expected behavior and attachments needed
+
+## Summary 
+
+## Description of inputs
+
+## Images and/or videos
+
+## Conclude 
+
 ## 1. Create a new RTL project pong in Vivado Quick Start
 Create six new source files of file type VHDL called clk_wiz_0, clk_wiz_0_clk_wiz, vga_sync, bat_n_ball, adc_if, and pong
 
@@ -26,3 +36,6 @@ Click 'Generate Bitstream'
 Click 'Open Hardware Manager' and click 'Open Target' then 'Auto Connect'
 
 Click 'Program Device' then xc7a100t_0 to download pong.bit to the Nexys A7-100T board
+
+
+##Modifications (Lab6)
