@@ -39,3 +39,7 @@ Click 'Program Device' then xc7a100t_0 to download pong.bit to the Nexys A7-100T
 
 
 ## Modifications (Lab6)
+
+
+## Video
+[![FlappyBird](./Documents/image.png)]((https://www.youtube.com/shorts/GRCoJyo5vsY))
