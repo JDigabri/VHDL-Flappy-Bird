@@ -7,7 +7,7 @@ Nexys A7 Board
 
 [Vivado](https://www.xilinx.com/products/design-tools/vivado.html)
 
-[Nexys-a7-100t Board Files](./Boards/nexys-a7-100t.rar)
+[Nexys-a7-100t Board Files](./Boards/)
 
 ## Setup
 
