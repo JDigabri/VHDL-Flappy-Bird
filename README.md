@@ -1,14 +1,17 @@
-## Expected behavior and attachments needed
-
 ## Summary 
 
-## Description of inputs
+## Prerequisites 
+VGA Cable and Monitor that supports VGA  
 
-## Images and/or videos
+Nexys A7 Board  
 
-## Conclude 
+[Vivado](https://www.xilinx.com/products/design-tools/vivado.html)
 
-## 1. Create a new RTL project pong in Vivado Quick Start
+[Nexys-a7-100t Board Files](./Boards/nexys-a7-100t.rar)
+
+## Setup
+
+### 1. Create a new RTL project pong in Vivado Quick Start
 Create six new source files of file type VHDL called clk_wiz_0, clk_wiz_0_clk_wiz, vga_sync, bat_n_ball, adc_if, and pong
 
 clk_wiz_0.vhd and clk_wiz_0_clk_wiz.vhd are the same files as in Lab 3
@@ -27,19 +30,27 @@ Click constraints and copy the code from pong.xdc (or pong_2.xdc)
 
 As an alternative, you can instead download files from Github and import them into your project when creating the project. The source file or files would still be imported during the Source step, and the constraint file or files would still be imported during the Constraints step.
 
-## 2. Run synthesis
-## 3. Run implementation
-3b. (optional, generally not recommended as it is difficult to extract information from and can cause Vivado shutdown) Open implemented design
-## 4. Generate bitstream, open hardware manager, and program device
-Click 'Generate Bitstream'
+### 2. Run synthesis  
+### 3. Run implementation  
+3b. (optional, generally not recommended as it is difficult to extract information from and can cause Vivado shutdown) Open implemented design  
+### 4. Generate bitstream, open hardware manager, and program device  
+Click 'Generate Bitstream'  
 
-Click 'Open Hardware Manager' and click 'Open Target' then 'Auto Connect'
+Click 'Open Hardware Manager' and click 'Open Target' then 'Auto Connect'  
 
-Click 'Program Device' then xc7a100t_0 to download pong.bit to the Nexys A7-100T board
+Click 'Program Device' then xc7a100t_0 to download pong.bit to the Nexys A7-100T board  
+
 
 
 ## Modifications (Lab6)
 
-
-## Video
+## Images and/or videos
 [![FlappyBird](./Documents/image.png)](https://www.youtube.com/shorts/GRCoJyo5vsY)
+
+
+
+
+
+
+
+
