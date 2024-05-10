@@ -43,7 +43,7 @@ Click 'Program Device' then xc7a100t_0 to download pong.bit to the Nexys A7-100T
 
 ## Modifications (Lab6)
 
-BTNU button is now the 'flap' button
+BTNL button is now the 'flap' button
 ```flap_btn : IN STD_LOGIC; -- Button for flapping```  
 
 ### Ball Modification
