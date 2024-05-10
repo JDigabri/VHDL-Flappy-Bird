@@ -1,4 +1,5 @@
 ## Summary 
+We modified the original Lab 6 Pong code to mirror the iconic mobile game Flappy Bird
 
 ## Prerequisites 
 VGA Cable and Monitor that supports VGA  
