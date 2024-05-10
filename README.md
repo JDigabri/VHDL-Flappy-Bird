@@ -38,4 +38,4 @@ Click 'Open Hardware Manager' and click 'Open Target' then 'Auto Connect'
 Click 'Program Device' then xc7a100t_0 to download pong.bit to the Nexys A7-100T board
 
 
-##Modifications (Lab6)
+## Modifications (Lab6)
